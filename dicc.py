@@ -54,15 +54,16 @@ def search (word):
 		lev_menu_for (word)
 		return
 
-	with_accents = keys_without_accents[word]
-	index_start, index_end = keys[with_accents]
+	for with_accents in keys_without_accents[word]:
+		print
+		index_start, index_end = keys[with_accents]
 	
-	for line in dicc[index_start: index_end]:
-		line = sub("^" + with_accents, color.BOLD + with_accents + color.END, line)
-		line = sub("( [0-9]\. )", color.BOLD + color.BLUE + "\\1" + color.END, line)
-		line = sub("([ (])" + abrev + "([ ;)])", "\\1" + color.BOLD + color.RED + "\\2" + color.END + "\\3", line)
+		for line in dicc[index_start: index_end]:
+			line = sub("^" + with_accents, color.BOLD + unfix_accents(with_accents) + color.END, line)
+			line = sub("( [0-9]\. )", color.BOLD + color.BLUE + "\\1" + color.END, line)
+			line = sub("([ (])" + abrev + "([ ;)])", "\\1" + color.BOLD + color.RED + "\\2" + color.END + "\\3", line)
 
-		print line
+			print line
 
 	return
 
@@ -79,12 +80,16 @@ def search_by_bruteforce (word):
 			print line
 			if match(".*\.$", line): return
 
+escaped_accents = [ ("a-", "ā"), ("u-", "ū"), ("i-", "ı̄"), ("m'", "ṁ"), ("n'", "ṅ"), ("n~", "ñ") ]
+
 def fix_accents (word):
-	replacements = [ ("a-", "ā"), ("u-", "ū"), ("i-", "ı̄"), ("m'", "ṁ"), ("n'", "ṅ") ]
-	return replace(word, replacements)
+	return replace(word, escaped_accents)
+
+def unfix_accents (word):
+	return replace(word, [ (accented, unaccented) for (unaccented, accented) in escaped_accents ])
 
 def remove_accents (word):
-	replacements = [ ("ā", "a"), ("ū", "u"), ("ı̄", "i"), ("ṁ", "m"), ("ṅ", "n"), ("n.", "n"), ("l.", "l"), ("d.", "d"), ("t.", "t") ]
+	replacements = [ ("ā", "a"), ("ū", "u"), ("ı̄", "i"), ("ṁ", "m"), ("ṅ", "n"), ("n.", "n"), ("l.", "l"), ("d.", "d"), ("t.", "t"), ("ñ", "n") ]
 	return replace(word, replacements)
 
 def replace (word, replacements):	
@@ -93,7 +98,14 @@ def replace (word, replacements):
 	return word
 
 def without_accents (keys):
-	return { remove_accents(key): key for (key, value) in keys.items() }
+	wa = {}
+	for (key, value) in keys.items():
+		key_wa = remove_accents(key)
+		if not key_wa in wa:
+			wa[key_wa] = [ key ]
+		else:
+			wa[key_wa].append(key)
+	return wa
 
 # MAIN
 dicc = [ line.strip("\n") for line in open("pali-es.dic") ]
