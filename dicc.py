@@ -60,7 +60,7 @@ def search (word):
 	for line in dicc[index_start: index_end]:
 		line = sub("^" + with_accents, color.BOLD + with_accents + color.END, line)
 		line = sub("( [0-9]\. )", color.BOLD + color.BLUE + "\\1" + color.END, line)
-		line = sub(" " + abrev + "([ ;])", color.BOLD + color.RED + " \\1\\2" + color.END, line)
+		line = sub("([ (])" + abrev + "([ ;)])", "\\1" + color.BOLD + color.RED + "\\2" + color.END + "\\3", line)
 
 		print line
 
